@@ -1,64 +1,131 @@
-<p align="center">
-  <a href="https://www.medusajs.com">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/59018053/229103275-b5e482bb-4601-46e6-8142-244f531cebdb.svg">
-    <source media="(prefers-color-scheme: light)" srcset="https://user-images.githubusercontent.com/59018053/229103726-e5b529a3-9b3f-4970-8a1f-c6af37f087bf.svg">
-    <img alt="Medusa logo" src="https://user-images.githubusercontent.com/59018053/229103726-e5b529a3-9b3f-4970-8a1f-c6af37f087bf.svg">
-    </picture>
-  </a>
-</p>
-<h1 align="center">
-  Medusa Plugin Starter
-</h1>
+# Order Gift Promotions for Medusa v2
 
-<h4 align="center">
-  <a href="https://docs.medusajs.com">Documentation</a> |
-  <a href="https://www.medusajs.com">Website</a>
-</h4>
+A Medusa v2 plugin that automatically adds free gift items to a customer's cart based on their order history. When a customer is about to place their Nth order, matching gift promotions are applied to the cart.
 
-<p align="center">
-  Building blocks for digital commerce
-</p>
-<p align="center">
-  <a href="https://github.com/medusajs/medusa/blob/master/CONTRIBUTING.md">
-    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat" alt="PRs welcome!" />
-  </a>
-    <a href="https://www.producthunt.com/posts/medusa"><img src="https://img.shields.io/badge/Product%20Hunt-%231%20Product%20of%20the%20Day-%23DA552E" alt="Product Hunt"></a>
-  <a href="https://discord.gg/xpCwq3Kfn8">
-    <img src="https://img.shields.io/badge/chat-on%20discord-7289DA.svg" alt="Discord Chat" />
-  </a>
-  <a href="https://twitter.com/intent/follow?screen_name=medusajs">
-    <img src="https://img.shields.io/twitter/follow/medusajs.svg?label=Follow%20@medusajs" alt="Follow @medusajs" />
-  </a>
-</p>
+## How It Works
 
-## Compatibility
+1. An admin creates an **order gift promotion** that targets a specific order count (e.g., "on a customer's 3rd order")
+2. Each promotion has one or more **gift items** (product variants with quantities)
+3. When a cart is created or updated, call `refreshGiftItems` to evaluate eligibility:
+   - The customer's completed order history is counted (orders with payment status `captured`, `refunded`, or `partially_refunded`)
+   - If `completed orders + 1` matches a promotion's target quantity, the gift items are added to the cart for free
+   - Gift items are kept in sync: removed when no longer applicable, quantities corrected if changed
 
-This starter is compatible with versions >= 2.4.0 of `@medusajs/medusa`. 
+## Installation
 
-## Getting Started
+```bash
+npm install @webbers/order-gift-promotions-medusa
+```
 
-Visit the [Quickstart Guide](https://docs.medusajs.com/learn/installation) to set up a server.
+## Setup
 
-Visit the [Plugins documentation](https://docs.medusajs.com/learn/fundamentals/plugins) to learn more about plugins and how to create them.
+### 1. Register the module
 
-Visit the [Docs](https://docs.medusajs.com/learn/installation#get-started) to learn more about our system requirements.
+In your Medusa backend's `medusa-config.ts`:
 
-## What is Medusa
+```ts
+module.exports = defineConfig({
+  projectConfig: {
+    // ...
+  },
+  plugins: [
+    // ... other plugins
+    '@webbers/order-gift-promotions-medusa'
+  ],
+})
+```
 
-Medusa is a set of commerce modules and tools that allow you to build rich, reliable, and performant commerce applications without reinventing core commerce logic. The modules can be customized and used to build advanced ecommerce stores, marketplaces, or any product that needs foundational commerce primitives. All modules are open-source and freely available on npm.
+### 2. Run migrations
 
-Learn more about [Medusa’s architecture](https://docs.medusajs.com/learn/introduction/architecture) and [commerce modules](https://docs.medusajs.com/learn/fundamentals/modules/commerce-modules) in the Docs.
+```bash
+npx medusa db:migrate
+```
 
-## Community & Contributions
+### 3. Wire up cart refreshing
 
-The community and core team are available in [GitHub Discussions](https://github.com/medusajs/medusa/discussions), where you can ask for support, discuss roadmap, and share ideas.
+Call `refreshGiftItems` in the `beforeRefreshingPaymentCollection` hook. Example:
 
-Join our [Discord server](https://discord.com/invite/medusajs) to meet other community members.
+```ts
+import {
+  refreshCartFields,
+  RefreshCartProps,
+  refreshGiftItems,
+} from "@webbers/order-gift-promotions-medusa/utils"
 
-## Other channels
+refreshCartItemsWorkflow.hooks.beforeRefreshingPaymentCollection(
+  async ({input}, {container}) => {
+    const query = container.resolve(ContainerRegistrationKeys.QUERY)
 
-- [GitHub Issues](https://github.com/medusajs/medusa/issues)
-- [Twitter](https://twitter.com/medusajs)
-- [LinkedIn](https://www.linkedin.com/company/medusajs)
-- [Medusa Blog](https://medusajs.com/blog/)
+    const {
+      data: [cart],
+    } = await query.graph(
+      {
+        entity: Modules.CART,
+        fields: refreshCartFields,
+        filters: {
+          id: input.cart_id,
+        },
+      },
+      {
+        throwIfKeyNotFound: true,
+      }
+    )
+
+    const typedCart = cart as unknown as RefreshCartProps
+
+    await refreshGiftItems(
+      {
+        cart: typedCart,
+      },
+      container
+    )
+  }
+)
+```
+
+## Admin UI
+
+The plugin registers an admin UI page at `/promotions/order-gift-promotions` where you can:
+
+- View all order gift promotions
+- Create a new promotion (set the target order count and gift items)
+- Edit an existing promotion
+- Delete a promotion
+
+## API Endpoints
+
+All endpoints require admin authentication.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/admin/order-gift-promotions` | List all promotions |
+| `POST` | `/admin/order-gift-promotions` | Create a promotion |
+| `GET` | `/admin/order-gift-promotions/:id` | Get a single promotion |
+| `POST` | `/admin/order-gift-promotions/:id` | Update a promotion |
+| `DELETE` | `/admin/order-gift-promotions/:id` | Delete a promotion |
+
+### Create/Update payload
+
+```json
+{
+  "order_quantity": 3,
+  "gift_items": [
+    {
+      "variant_id": "variant_01ABC...",
+      "quantity": 1
+    }
+  ]
+}
+```
+
+## Development
+
+```bash
+pnpm install
+pnpm dev     # develop mode
+pnpm build   # build plugin
+```
+
+## License
+
+MIT — [Webbers B.V.](https://webbers.com)
