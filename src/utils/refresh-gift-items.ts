@@ -56,10 +56,6 @@ export const refreshGiftItems = async (
   try {
     const cart = data.cart
 
-    if (cart.metadata?.ogp_disabled === true) {
-      return
-    }
-
     const {data: orderGiftPromotions} = await query.graph(
       {
         entity: "order_gift_promotion",
@@ -82,8 +78,8 @@ export const refreshGiftItems = async (
     const existingCartGiftItems =
       cart.items?.filter((i) => i?.metadata?.ogp_gift === true) ?? []
 
-    // If no email or no order gift promotions, drop any existing gift items and exit
-    if (!cart?.email || !orderGiftPromotions || orderGiftPromotions.length === 0) {
+    // If no email, no order gift promotions or disabled on cart, drop any existing gift items and exit
+    if (cart.metadata?.ogp_disabled === true && !cart?.email || !orderGiftPromotions || orderGiftPromotions.length === 0) {
       if (existingCartGiftItems.length > 0) {
         await cartModuleService.deleteLineItems(
           existingCartGiftItems.map((i) => i!.id)
