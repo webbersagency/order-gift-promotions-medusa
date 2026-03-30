@@ -64,12 +64,12 @@
   "peerDependencies": {
     "@medusajs/admin-sdk": "^2.12.5",
     "@medusajs/cli": "^2.12.5",
+    "@medusajs/core-flows": "^2.13.5",
     "@medusajs/framework": "^2.12.5",
     "@medusajs/icons": "^2.12.5",
     "@medusajs/js-sdk": "^2.13.5",
     "@medusajs/medusa": "^2.12.5",
     "@medusajs/test-utils": "^2.12.5",
-    "@medusajs/core-flows": "^2.13.5",
     "@medusajs/ui": "4.0.25",
     "react-router-dom": "6.30.3"
   },
@@ -79,6 +79,7 @@
   "packageManager": "pnpm@10.33.0",
   "dependencies": {
     "@hookform/resolvers": "3.4.2",
+    "@medusajs/admin-shared": "^2.13.5",
     "@radix-ui/react-popover": "^1.1.15",
     "react-hook-form": "^7.72.0"
   }
