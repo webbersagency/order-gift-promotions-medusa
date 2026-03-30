@@ -42,8 +42,7 @@ export const formatOrderGiftPromotionGiftItemsToLineItems = (
     is_custom_price: true,
     unit_price: 0,
     metadata: {
-      ogp_gift: true,
-      is_gift: true
+      ogp_gift: true
     },
   }))
 }
