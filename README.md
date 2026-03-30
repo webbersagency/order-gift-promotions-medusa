@@ -14,9 +14,8 @@ A Medusa v2 plugin that automatically adds free gift items to a customer's cart 
 
 ### Disable/Enable Automatic Gift Item(s) on Cart
 If you want to allow customers to remove gift items from their cart:
-1. Before the line item deletion request set `ogp_disabled: true` in the cart's metadata. This will cause refreshGiftItems to skip gift syncing and remove any existing gift items for that cart.
-2. Trigger line item deletion request on the cart gift item.
-3. Whenever you want to allow customers to add gift items back to their cart, remove `ogp_disabled` from the cart's metadata. 
+1. Set `ogp_disabled: true` in the cart's metadata. This will cause refreshGiftItems to skip gift syncing and remove any existing gift items for that cart.
+2. Whenever you want to allow customers to add gift items back to their cart, remove `ogp_disabled` from the cart's metadata. 
 
 ## Installation
 
