@@ -11,6 +11,9 @@ importers:
       '@hookform/resolvers':
         specifier: 3.4.2
         version: 3.4.2(react-hook-form@7.72.0(react@18.3.1))
+      '@medusajs/admin-shared':
+        specifier: ^2.13.5
+        version: 2.13.5
       '@medusajs/core-flows':
         specifier: ^2.13.5
         version: 2.13.5(@medusajs/framework@2.13.5(@medusajs/cli@2.13.5(@types/node@20.19.37))(@types/node@20.19.37)(ioredis@5.10.1)(vite@5.4.21(@types/node@20.19.37))(zod@3.25.76))
