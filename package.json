@@ -1,5 +1,5 @@
 {
-  "name": "order-gift-promotions-medusa",
+  "name": "@webbers/order-gift-promotions-medusa",
   "version": "1.0.0",
   "description": "Add order gift promotions functionality for Medusa v2",
   "author": "Webbers B.V. <development@webbers.com>",
