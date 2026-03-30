@@ -4,6 +4,21 @@ import {formatOrderGiftPromotionGiftItemsToLineItems, OrderGiftPromotionGiftItem
 import {CreateLineItemForCartDTO, MedusaContainer} from "@medusajs/framework/types"
 import {getLastPaymentStatus} from "@medusajs/core-flows"
 
+export const refreshCartFields = [
+  "id",
+  "email",
+  "currency_code",
+  "metadata",
+  "items.id",
+  "items.variant_id",
+  "items.metadata",
+  "items.unit_price",
+  "items.quantity",
+  "items.is_tax_inclusive",
+  "items.adjustments.id",
+  "items.adjustments.code",
+]
+
 export type RefreshCartProps = {
   id: string
   email: string
