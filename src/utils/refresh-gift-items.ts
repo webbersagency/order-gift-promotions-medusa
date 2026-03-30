@@ -79,7 +79,7 @@ export const refreshGiftItems = async (
       cart.items?.filter((i) => i?.metadata?.ogp_gift === true) ?? []
 
     // If no email, no order gift promotions or disabled on cart, drop any existing gift items and exit
-    if (cart.metadata?.ogp_disabled === true && !cart?.email || !orderGiftPromotions || orderGiftPromotions.length === 0) {
+    if (cart.metadata?.ogp_disabled === true || !cart?.email || !orderGiftPromotions || orderGiftPromotions.length === 0) {
       if (existingCartGiftItems.length > 0) {
         await cartModuleService.deleteLineItems(
           existingCartGiftItems.map((i) => i!.id)
