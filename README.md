@@ -10,6 +10,7 @@ A Medusa v2 plugin that automatically adds free gift items to a customer's cart 
    - The customer's completed order history is counted (orders with payment status `captured`, `refunded`, or `partially_refunded`)
    - If `completed orders + 1` matches a promotion's target quantity, the gift items are added to the cart for free
    - Gift items are kept in sync: removed when no longer applicable, quantities corrected if changed
+4. If you want to allow customers to remove gift items from their cart, before line item deletion set `ogp_disabled` metadata to `true` on the cart.
 
 ## Installation
 

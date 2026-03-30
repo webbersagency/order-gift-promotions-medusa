@@ -56,6 +56,10 @@ export const refreshGiftItems = async (
   try {
     const cart = data.cart
 
+    if (cart.metadata?.ogp_disabled === true) {
+      return
+    }
+
     const {data: orderGiftPromotions} = await query.graph(
       {
         entity: "order_gift_promotion",
@@ -76,7 +80,7 @@ export const refreshGiftItems = async (
     )
 
     const existingCartGiftItems =
-      cart.items?.filter((i) => i?.metadata?.is_ogp_gift === true) ?? []
+      cart.items?.filter((i) => i?.metadata?.ogp_gift === true) ?? []
 
     // If no email or no order gift promotions, drop any existing gift items and exit
     if (!cart?.email || !orderGiftPromotions || orderGiftPromotions.length === 0) {
@@ -87,7 +91,7 @@ export const refreshGiftItems = async (
       }
 
       await cartModuleService.updateCarts(cart.id, {
-        metadata: {...cart.metadata, order_gift_promotion_id: null},
+        metadata: {...cart.metadata, ogp_id: null},
       })
 
       return
@@ -99,7 +103,7 @@ export const refreshGiftItems = async (
       fields: ["id", "currency_code", "payment_collections.*"],
       filters: {
         status: {
-          $neq: 'canceled'
+          $ne: 'canceled'
         },
         email: cart.email,
       },
@@ -193,7 +197,7 @@ export const refreshGiftItems = async (
     await cartModuleService.updateCarts(cart.id, {
       metadata: {
         ...cart.metadata,
-        order_gift_promotion_id: applicableOrderGiftPromotion?.id ?? null,
+        ogp_id: applicableOrderGiftPromotion?.id ?? null,
       },
     })
   } catch (e) {
