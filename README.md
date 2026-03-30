@@ -4,19 +4,26 @@ A Medusa v2 plugin that automatically adds free gift items to a customer's cart 
 
 ## How It Works
 
+### Automatic Gift Item(s)
 1. An admin creates an **order gift promotion** that targets a specific order count (e.g., "on a customer's 3rd order")
 2. Each promotion has one or more **gift items** (product variants with quantities)
 3. When a cart is created or updated, call `refreshGiftItems` to evaluate eligibility:
-   - The customer's completed order history is counted (orders with payment status `captured`, `refunded`, or `partially_refunded`)
+   - The customer's completed order history is counted (orders with payment status `captured` or `partially_refunded`)
    - If `completed orders + 1` matches a promotion's target quantity, the gift items are added to the cart for free
    - Gift items are kept in sync: removed when no longer applicable, quantities corrected if changed
+
+### Disable/Enable Automatic Gift Item(s) on Cart
+If you want to allow customers to remove gift items from their cart:
+1. Before the line item deletion request set `ogp_disabled: true` in the cart's metadata. This will cause refreshGiftItems to skip gift syncing and remove any existing gift items for that cart.
+2. Trigger line item deletion request on the cart gift item.
+3. Whenever you want to allow customers to add gift items back to their cart, remove `ogp_disabled` from the cart's metadata. 
 
 ## Installation
 
 ```bash
 npm install @webbers/order-gift-promotions-medusa
 ```
-**Requirement:** Medusa v2.13.5 or higher.
+**Requirement:** Medusa 2.13.5 or higher.
 
 ## Setup
 
@@ -47,11 +54,13 @@ npx medusa db:migrate
 Call `refreshGiftItems` in the `beforeRefreshingPaymentCollection` hook. Example:
 
 ```ts
+import {refreshCartItemsWorkflow} from "@medusajs/medusa/core-flows"
 import {
   refreshCartFields,
   RefreshCartProps,
   refreshGiftItems,
 } from "@webbers/order-gift-promotions-medusa/utils"
+import {ContainerRegistrationKeys, Modules} from "@medusajs/framework/utils"
 
 refreshCartItemsWorkflow.hooks.beforeRefreshingPaymentCollection(
   async ({input}, {container}) => {

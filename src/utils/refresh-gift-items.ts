@@ -76,10 +76,10 @@ export const refreshGiftItems = async (
     )
 
     const existingCartGiftItems =
-      cart.items?.filter((i) => i?.metadata?.is_ogp_gift === true) ?? []
+      cart.items?.filter((i) => i?.metadata?.ogp_gift === true) ?? []
 
-    // If no email or no order gift promotions, drop any existing gift items and exit
-    if (!cart?.email || !orderGiftPromotions || orderGiftPromotions.length === 0) {
+    // If no email, no order gift promotions or disabled on cart, drop any existing gift items and exit
+    if (cart.metadata?.ogp_disabled === true || !cart?.email || !orderGiftPromotions || orderGiftPromotions.length === 0) {
       if (existingCartGiftItems.length > 0) {
         await cartModuleService.deleteLineItems(
           existingCartGiftItems.map((i) => i!.id)
@@ -87,7 +87,7 @@ export const refreshGiftItems = async (
       }
 
       await cartModuleService.updateCarts(cart.id, {
-        metadata: {...cart.metadata, order_gift_promotion_id: null},
+        metadata: {...cart.metadata, ogp_id: null},
       })
 
       return
@@ -99,7 +99,7 @@ export const refreshGiftItems = async (
       fields: ["id", "currency_code", "payment_collections.*"],
       filters: {
         status: {
-          $neq: 'canceled'
+          $ne: "canceled"
         },
         email: cart.email,
       },
@@ -193,7 +193,7 @@ export const refreshGiftItems = async (
     await cartModuleService.updateCarts(cart.id, {
       metadata: {
         ...cart.metadata,
-        order_gift_promotion_id: applicableOrderGiftPromotion?.id ?? null,
+        ogp_id: applicableOrderGiftPromotion?.id ?? null,
       },
     })
   } catch (e) {
