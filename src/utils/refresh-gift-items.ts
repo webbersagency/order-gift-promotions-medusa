@@ -76,11 +76,10 @@ export const refreshGiftItems = async (
     )
 
     const existingCartGiftItems =
-      cart.items?.filter((i) => i?.metadata?.is_gift === true) ?? []
+      cart.items?.filter((i) => i?.metadata?.is_ogp_gift === true) ?? []
 
-    // TODO refactor this logic to only commit relevant actions, not remove then apply
-    // Helper: remove all gift items
-    const removeAllGiftItems = async () => {
+    // If no email or no order gift promotions, drop any existing gift items and exit
+    if (!cart?.email || !orderGiftPromotions || orderGiftPromotions.length === 0) {
       if (existingCartGiftItems.length > 0) {
         await cartModuleService.deleteLineItems(
           existingCartGiftItems.map((i) => i!.id)
@@ -90,16 +89,7 @@ export const refreshGiftItems = async (
       await cartModuleService.updateCarts(cart.id, {
         metadata: {...cart.metadata, order_gift_promotion_id: null},
       })
-    }
 
-    // If no email, drop any existing gift items and exit
-    if (!cart?.email) {
-      await removeAllGiftItems()
-      return
-    }
-
-    if (!orderGiftPromotions || orderGiftPromotions.length === 0) {
-      await removeAllGiftItems()
       return
     }
 
@@ -108,13 +98,16 @@ export const refreshGiftItems = async (
       entity: Modules.ORDER,
       fields: ["id", "currency_code", "payment_collections.*"],
       filters: {
+        status: {
+          $neq: 'canceled'
+        },
         email: cart.email,
       },
     })
 
     const applicableOrders = orderHistory.filter((o) => {
       const paymentStatus = getLastPaymentStatus(o as unknown as OrderDetailDTO)
-      return ["captured", "refunded", "partially_refunded"].includes(
+      return ["captured", "partially_refunded"].includes(
         paymentStatus
       )
     })

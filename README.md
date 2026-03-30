@@ -16,6 +16,7 @@ A Medusa v2 plugin that automatically adds free gift items to a customer's cart 
 ```bash
 npm install @webbers/order-gift-promotions-medusa
 ```
+**Requirement:** Medusa v2.13.5 or higher.
 
 ## Setup
 
