@@ -99,7 +99,7 @@ export const refreshGiftItems = async (
       fields: ["id", "currency_code", "payment_collections.*"],
       filters: {
         status: {
-          $ne: 'canceled'
+          $ne: "canceled"
         },
         email: cart.email,
       },
