@@ -43,6 +43,11 @@ export type RefreshGiftItemsInput = {
    * The cart's ID.
    */
   cart: RefreshCartProps
+  /**
+   * Payment provider IDs whose authorized payments count as completed orders,
+   * for providers that never capture in Medusa, such as pay on invoice.
+   */
+  countAuthorizedPaymentProviders?: string[]
 }
 
 export const refreshGiftItems = async (
@@ -96,7 +101,12 @@ export const refreshGiftItems = async (
     // Compute completed order history count
     const {data: orderHistory} = await query.graph({
       entity: Modules.ORDER,
-      fields: ["id", "currency_code", "payment_collections.*"],
+      fields: [
+        "id",
+        "currency_code",
+        "payment_collections.*",
+        "payment_collections.payments.provider_id",
+      ],
       filters: {
         status: {
           $ne: "canceled"
@@ -105,10 +115,22 @@ export const refreshGiftItems = async (
       },
     })
 
+    const countAuthorizedPaymentProviders =
+      data.countAuthorizedPaymentProviders ?? []
+
     const applicableOrders = orderHistory.filter((o) => {
       const paymentStatus = getLastPaymentStatus(o as unknown as OrderDetailDTO)
-      return ["captured", "partially_refunded"].includes(
-        paymentStatus
+      if (["captured", "partially_refunded"].includes(paymentStatus)) {
+        return true
+      }
+
+      return (
+        paymentStatus === "authorized" &&
+        !!o.payment_collections?.some((collection) =>
+          collection?.payments?.some((payment) =>
+            countAuthorizedPaymentProviders.includes(payment?.provider_id)
+          )
+        )
       )
     })
 
