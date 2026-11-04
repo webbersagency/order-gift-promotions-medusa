@@ -8,7 +8,7 @@ A Medusa v2 plugin that automatically adds free gift items to a customer's cart 
 1. An admin creates an **order gift promotion** that targets a specific order count (e.g., "on a customer's 3rd order")
 2. Each promotion has one or more **gift items** (product variants with quantities)
 3. When a cart is created or updated, call `refreshGiftItems` to evaluate eligibility:
-   - The customer's completed order history is counted (orders with payment status `captured` or `partially_refunded`)
+   - The customer's completed order history is counted (orders with payment status `captured` or `partially_refunded`, plus `authorized` orders paid through a provider in `countAuthorizedPaymentProviders`)
    - If `completed orders + 1` matches a promotion's target quantity, the gift items are added to the cart for free
    - Gift items are kept in sync: removed when no longer applicable, quantities corrected if changed
 
@@ -89,6 +89,20 @@ refreshCartItemsWorkflow.hooks.beforeRefreshingPaymentCollection(
       container
     )
   }
+)
+```
+
+### 4. Count orders that are never captured (optional)
+
+Some payment providers never capture in Medusa, for example pay on invoice, where payment is tracked in an invoicing system. Orders paid that way stay `authorized` and would not count as completed orders, so the customer gets the first-order gift on every order. Pass those provider IDs to count their authorized orders:
+
+```ts
+await refreshGiftItems(
+  {
+    cart: typedCart,
+    countAuthorizedPaymentProviders: ["pp_on-invoice_on-invoice"],
+  },
+  container
 )
 ```
 
