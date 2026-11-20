@@ -106,6 +106,18 @@ await refreshGiftItems(
 )
 ```
 
+### 5. Caching (optional)
+
+With Medusa's [Caching Module](https://docs.medusajs.com/resources/infrastructure-modules/caching) enabled, `refreshGiftItems` reads the promotions from the cache instead of the database. The create, update and delete workflows clear that cache entry, so a change applies on the next cart refresh. The entry also expires after 5 minutes.
+
+If you change promotions outside these workflows, clear the entry yourself:
+
+```ts
+import {clearOrderGiftPromotionsCache} from "@webbers/order-gift-promotions-medusa/utils"
+
+await clearOrderGiftPromotionsCache(container)
+```
+
 ## Admin UI
 
 The plugin registers an admin UI page at `/promotions/order-gift-promotions` where you can:
@@ -147,6 +159,14 @@ All endpoints require admin authentication.
 pnpm install
 pnpm dev     # develop mode
 pnpm build   # build plugin
+```
+
+## Tests
+
+The integration tests need a local PostgreSQL server, they create and drop their own database. The root `medusa-config.ts` is only used by these tests, the plugin build ignores it:
+
+```bash
+DB_USERNAME=postgres DB_PASSWORD=password pnpm test:integration:http
 ```
 
 ## License
