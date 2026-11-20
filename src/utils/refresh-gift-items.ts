@@ -3,6 +3,10 @@ import {ContainerRegistrationKeys, Modules} from "@medusajs/framework/utils"
 import {formatOrderGiftPromotionGiftItemsToLineItems, OrderGiftPromotionGiftItemType,} from "./order-gift-promotions"
 import {CreateLineItemForCartDTO, MedusaContainer} from "@medusajs/framework/types"
 import {getLastPaymentStatus} from "@medusajs/core-flows"
+import {
+  ORDER_GIFT_PROMOTIONS_CACHE_KEY,
+  ORDER_GIFT_PROMOTIONS_CACHE_TTL,
+} from "./order-gift-promotions-cache"
 
 export const refreshCartFields = [
   "id",
@@ -76,6 +80,8 @@ export const refreshGiftItems = async (
       {
         cache: {
           enable: true,
+          key: ORDER_GIFT_PROMOTIONS_CACHE_KEY,
+          ttl: ORDER_GIFT_PROMOTIONS_CACHE_TTL,
         },
       }
     )

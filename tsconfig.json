@@ -32,6 +32,9 @@
     ".medusa/server",
     ".medusa/admin",
     "src/admin",
-    ".cache"
+    ".cache",
+    "integration-tests",
+    "medusa-config.ts",
+    "jest.config.js"
   ]
 }
